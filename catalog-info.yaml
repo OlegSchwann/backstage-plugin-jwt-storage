@@ -1,8 +1,46 @@
 apiVersion: backstage.io/v1alpha1
 kind: Component
 metadata:
-  name: jwt-storage-plugin-component
+  name: redirects
+  namespace: gophers
+  description: Сервис преобразует входящий запрос в ответ, который в дальшейшем используется для редиректов. Сам сервис не делает непосредственно редирект. Преобразования входящего запроса в редирект осуществляются путем прохода по дереву рулов, матчинга кондишенов и применения трансформаций.
+  tags:
+    - go
+  annotations:
+    vault.io/secrets-path: gophers/service/redirects
+  links:
+    - url: https://web-vault-prod.query.consul:8200/ui/vault/secrets/gophers/list/service/redirects/
+      title: vault
+      icon: externalLink
+    - url: https://master-redirects.ams-web.kube.company.lan
+      title: production
+      icon: externalLink
+    - url: https://master-redirects.lux.kube.company.lan
+      title: stage
+      icon: externalLink
+    - url: https://dev-redirects.lux.kube.company.lan
+      title: dev
+      icon: externalLink
+    - url: https://ams-weblog.company.lan/app/discover#/?_g=%28filters:!%28%29,refreshInterval:%28pause:!t,value:0%29,time:%28from:now-30m,to:now%29%29&_a=%28columns:!%28level,logger,message,app_branch,app_commit,pod_name%29,filters:!%28%29,grid:%28columns:%28level:%28width:82%29,logger:%28width:178.8888888888889%29,message:%28width:473.1111111111111%29,uri:%28width:517.6666666666667%29%29%29,index:b3b37640-3cc9-11ee-85d8-3b84686af923,interval:auto,query:%28language:kuery,query:''%29,sort:!%28!%28timestamp,desc%29%29%29
+      title: Kibana - production
+      icon: externalLink
+    - url: https://lux-log.company.lan/s/default/app/discover#/?_g=%28filters:!%28%29,refreshInterval:%28pause:!t,value:0%29,time:%28from:now-15m,to:now%29%29&_a=%28columns:!%28level,logger,message,app_branch,app_commit,pod_name%29,filters:!%28%28'$state':%28store:appState%29,meta:%28alias:!n,disabled:!f,index:'0f289e21-079a-4d6e-b3b2-584e6ffcb55e',key:app_branch,negate:!f,params:%28query:dev%29,type:phrase%29,query:%28match_phrase:%28app_branch:dev%29%29%29%29,index:'0f289e21-079a-4d6e-b3b2-584e6ffcb55e',interval:auto,query:%28language:kuery,query:''%29,sort:!%28!%28timestamp,desc%29%29%29
+      title: Kibana - stage
+      icon: externalLink
 spec:
-  lifecycle: production
-  owner: my-team
   type: service
+  lifecycle: production
+  owner: default/gophers
+  responsibles: ["user:default/john.d"]
+  providesApis: ["redirects-api"]
+  consumesApis:
+    - default/directus-api
+    - default/curacao-domains-api
+    - default/domain-control-service-api
+    - default/feedcacheservice-api
+    - partner-settings-api
+    - default/redirect-service-api
+  dependsOn:
+    - resource:redirects-db
+    - resource:redirects-rules-topic
+    - resource:redirects-domains-topic
